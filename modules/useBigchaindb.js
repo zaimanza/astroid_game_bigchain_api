@@ -10,10 +10,17 @@ const useBigchaindb = () => {
     const fetchLatestTransaction = async (assetId) => {
         try {
             const assetsModel = await Assets()
-            let list = await axios.get(`${API_PATH}transactions?asset_id=${assetId}&operation=TRANSFER&last_tx=${true}`)
+
+            let list = await axios.get(`${API_PATH}transactions?asset_id=${assetId}&operation=TRANSFER&last_tx=${true}`).catch(function (error) {
+                if (error)
+                    console.log("Error in axios");
+            })
 
             if (list.data.length == 0) {
-                list = await axios.get(`${API_PATH}transactions?asset_id=${assetId}&operation=CREATE&last_tx=${true}`)
+                list = await axios.get(`${API_PATH}transactions?asset_id=${assetId}&operation=CREATE&last_tx=${true}`).catch(function (error) {
+                    if (error)
+                        console.log("Error in axios");
+                })
             }
 
             if (list.length == 0) return
@@ -79,7 +86,7 @@ const useBigchaindb = () => {
                 updatedBuilding,
                 privateKey,
             )
-
+            console.log(signedTransfer)
             let assetTransfered = await conn.postTransactionCommit(signedTransfer)
 
             return assetTransfered ?? {}
