@@ -15,14 +15,14 @@ const { fetchLatestTransaction, updateSingleAsset } = useBigchaindb()
 router.post('/add_points', async (req, res) => {
     try {
         const props = req.body;
-        if (!props?.transaction_id || !props?.points) {
+        if (!props?.asset_id || !props?.points) {
             res.status(400).json("Unauthorized")
             return
         }
 
         var isCanAppend = true
 
-        var fetchedLatestTransaction = await fetchLatestTransaction(props?.transaction_id)
+        var fetchedLatestTransaction = await fetchLatestTransaction(props?.asset_id)
 
         if (!fetchedLatestTransaction) {
             isCanAppend = false
