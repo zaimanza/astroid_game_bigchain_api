@@ -9,35 +9,47 @@ const useBigchaindb = () => {
     const conn = new BigChainDB.Connection(API_PATH)
     const fetchLatestTransaction = async (assetId) => {
         try {
+
             const assetsModel = await Assets()
 
-            let list = await axios.get(`${API_PATH}transactions?asset_id=${assetId}&operation=TRANSFER&last_tx=${true}`).catch(function (error) {
-                if (error)
-                    console.log("Error in axios");
+            var list = {}
+            list = await axios.get(`${API_PATH}transactions?asset_id=${assetId}&operation=TRANSFER&last_tx=${true}`).catch(function (error) {
+                if (error) {
+                    console.log("Error in axios")
+                }
             })
+            if (!list) {
+                list = {}
+                list.data = {}
+            }
 
-            if (list.data.length == 0) {
+            if (Object.keys(list.data).length === 0) {
                 list = await axios.get(`${API_PATH}transactions?asset_id=${assetId}&operation=CREATE&last_tx=${true}`).catch(function (error) {
                     if (error)
                         console.log("Error in axios");
                 })
             }
 
-            if (list.length == 0) return
+            if (!list) {
+                list = {}
+                list.data = {}
+            }
+
+            if (Object.keys(list.data).length === 0) return
 
             const dataAsset = await assetsModel.find({
                 "id": assetId,
 
             }, { projection: { data: 1, _id: 0 } }).toArray()
 
-            if (list.length != 0) {
+
+            if (Object.keys(list.data).length !== 0) {
                 return await {
                     ...list.data[0],
                     asset: dataAsset[0].data
                 }
             }
-
-            return await list.data[0] ?? {}
+            return await list.data ?? {}
         } catch (error) {
             res.status(400).json(error);
         }
@@ -86,10 +98,12 @@ const useBigchaindb = () => {
                 updatedBuilding,
                 privateKey,
             )
-            console.log(signedTransfer)
+
             let assetTransfered = await conn.postTransactionCommit(signedTransfer)
 
-            return assetTransfered ?? {}
+
+            if (!assetTransfered) return {}
+            return assetTransfered
         } catch (error) {
         }
     }
